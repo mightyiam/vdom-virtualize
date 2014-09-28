@@ -26,10 +26,10 @@ var VNode = require("vtree/vnode")
 
 module.exports = createVNode
 
-function createVNode(domNode, key) {
+function createVNode(domNode, key, properties) {
   key = key || null // XXX: Leave out `key` for now... merely used for (re-)ordering
 
-  if(domNode.nodeType == 1) return createFromElement(domNode, key)
+  if(domNode.nodeType == 1) return createFromElement(domNode, key, properties)
   if(domNode.nodeType == 3) return createFromTextNode(domNode, key)
   return
 }
@@ -46,14 +46,18 @@ function createFromTextNode(tNode) {
 }
 
 
-function createFromElement(el) {
+function createFromElement(el, key, properties) {
   var tagName = el.tagName
   , namespace = el.namespaceURI == 'http://www.w3.org/1999/xhtml'? null : el.namespaceURI
-  , properties = getElementProperties(el)
+  , properties
   , children = []
+  , merge
+
+  merge = require("merge")
+  properties = merge(getElementProperties(el), properties || {})
 
   for (var i = 0; i < el.childNodes.length; i++) {
-    children.push(createVNode(el.childNodes[i]/*, i*/))
+    children.push(createVNode(el.childNodes[i], i, properties))
   }
 
   return new VNode(tagName, properties, children, null, namespace)
